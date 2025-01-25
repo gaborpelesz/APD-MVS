@@ -1,13 +1,12 @@
 #include "main.h"
 #include "APD.h"
 
-using namespace boost::filesystem;
 
-void GenerateSampleList(const path &dense_folder, std::vector<Problem> &problems)
+void GenerateSampleList(const std::filesystem::path &dense_folder, std::vector<Problem> &problems)
 {
-	path cluster_list_path = dense_folder / path("pair.txt");
+	std::filesystem::path cluster_list_path = dense_folder / std::filesystem::path("pair.txt");
 	problems.clear();
-	ifstream file(cluster_list_path);
+	std::ifstream file(cluster_list_path);
 	std::stringstream iss;
 	std::string line;
 
@@ -27,7 +26,7 @@ void GenerateSampleList(const path &dense_folder, std::vector<Problem> &problems
 		iss >> problem.ref_image_id;
 
 		problem.dense_folder = dense_folder;
-		problem.result_folder = dense_folder / path("APD") / path(ToFormatIndex(problem.ref_image_id));
+		problem.result_folder = dense_folder / "APD" / ToFormatIndex(problem.ref_image_id);
 		create_directory(problem.result_folder);
 
 		int num_src_images;
@@ -52,7 +51,7 @@ bool CheckImages(const std::vector<Problem> &problems) {
 	if (problems.size() == 0) {
 		return false;
 	}
-	path image_path = problems[0].dense_folder / path("images") / path(ToFormatIndex(problems[0].ref_image_id) + ".jpg");
+	std::filesystem::path image_path = problems[0].dense_folder / "images" / (ToFormatIndex(problems[0].ref_image_id) + ".jpg");
 	cv::Mat image = cv::imread(image_path.string());
 	if (image.empty()) {
 		return false;
@@ -60,7 +59,7 @@ bool CheckImages(const std::vector<Problem> &problems) {
 	const int width = image.cols;
 	const int height = image.rows;
 	for (size_t i = 1; i < problems.size(); ++i) {
-		image_path = problems[i].dense_folder / path("images") / path(ToFormatIndex(problems[i].ref_image_id) + ".jpg");
+		image_path = problems[i].dense_folder / "images" / (ToFormatIndex(problems[i].ref_image_id) + ".jpg");
 		image = cv::imread(image_path.string());
 		if (image.cols != width || image.rows != height) {
 			return false;
@@ -73,7 +72,7 @@ int ComputeRoundNum(const std::vector<Problem> &problems) {
 	if (problems.size() == 0) {
 		return 0;
 	}
-	path image_path = problems[0].dense_folder / path("images") / path(ToFormatIndex(problems[0].ref_image_id) + ".jpg");
+	std::filesystem::path image_path = problems[0].dense_folder / "images" / (ToFormatIndex(problems[0].ref_image_id) + ".jpg");
 	cv::Mat image = cv::imread(image_path.string());
 	if (image.empty()) {
 		return 0;
@@ -114,20 +113,20 @@ void ProcessProblem(const Problem &problem) {
 		}
 	}
 	
-	path depth_path = problem.result_folder / path("depths.dmb");
+	std::filesystem::path depth_path = problem.result_folder / "depths.dmb";
 	WriteBinMat(depth_path, depth);
-	path normal_path = problem.result_folder / path("normals.dmb");
+	std::filesystem::path normal_path = problem.result_folder / "normals.dmb";
 	WriteBinMat(normal_path, normal);
-	path weak_path = problem.result_folder / path("weak.bin");
+	std::filesystem::path weak_path = problem.result_folder / "weak.bin";
 	WriteBinMat(weak_path, pixel_states);
-	path selected_view_path = problem.result_folder / path("selected_views.bin");
+	std::filesystem::path selected_view_path = problem.result_folder / "selected_views.bin";
 	WriteBinMat(selected_view_path, APD.GetSelectedViews());
 
 
 	if (problem.show_medium_result) {
-		path depth_img_path = problem.result_folder / path("depth_" + std::to_string(problem.iteration) + ".jpg");
-		path normal_img_path = problem.result_folder / path("normal_" + std::to_string(problem.iteration) + ".jpg");
-		path weak_img_path = problem.result_folder / path("weak_" + std::to_string(problem.iteration) + ".jpg");
+		std::filesystem::path depth_img_path = problem.result_folder / ("depth_" + std::to_string(problem.iteration) + ".jpg");
+		std::filesystem::path normal_img_path = problem.result_folder / ("normal_" + std::to_string(problem.iteration) + ".jpg");
+		std::filesystem::path weak_img_path = problem.result_folder / ("weak_" + std::to_string(problem.iteration) + ".jpg");
 		ShowDepthMap(depth_img_path, depth, APD.GetDepthMin(), APD.GetDepthMax());
 		ShowNormalMap(normal_img_path, normal);
 		ShowWeakImage(weak_img_path, pixel_states);
@@ -142,8 +141,8 @@ int main(int argc, char **argv) {
 		std::cerr << "USAGE: APD dense_folder\n";
 		return EXIT_FAILURE;
 	}
-	path dense_folder(argv[1]);
-	path output_folder = dense_folder / path("APD");
+	std::filesystem::path dense_folder(argv[1]);
+	std::filesystem::path output_folder = dense_folder / "APD";
 	create_directory(output_folder);
 	// set cuda device for multi-gpu machine
 	int gpu_index = 0;
@@ -220,10 +219,10 @@ int main(int argc, char **argv) {
 	{// delete files
 		for (size_t i = 0; i < problems.size(); ++i) {
 			const auto &problem = problems[i];
-			remove(problem.result_folder / path("weak.bin"));
-			remove(problem.result_folder / path("depths.dmb"));
-			remove(problem.result_folder / path("normals.dmb"));
-			remove(problem.result_folder / path("selected_views.bin"));
+			remove(problem.result_folder / "weak.bin");
+			remove(problem.result_folder / "depths.dmb");
+			remove(problem.result_folder / "normals.dmb");
+			remove(problem.result_folder / "selected_views.bin");
 			//remove(problem.result_folder / path("neighbour.bin")); 
 			//remove(problem.result_folder / path("neighbour_map.bin"));
 		}

@@ -2,36 +2,37 @@
 #define _APD_H_
 #include "main.h"
 
+#include <cuda_runtime.h>
+#include <curand_kernel.h>
+
 #define CUDA_SAFE_CALL(error) CudaSafeCall(error, __FILE__, __LINE__)
 #define CUDA_CHECK_ERROR() CudaCheckError(__FILE__, __LINE__)
 #define M_PI 3.14159265358979323846
-
-using namespace boost::filesystem;
 
 void CudaSafeCall(const cudaError_t error, const std::string& file, const int line);
 
 void CudaCheckError(const char* file, const int line);
 
-bool ReadBinMat(const path &mat_path, cv::Mat &mat);
+bool ReadBinMat(const std::filesystem::path &mat_path, cv::Mat &mat);
 
-bool WriteBinMat(const path &mat_path, const cv::Mat &mat);
+bool WriteBinMat(const std::filesystem::path &mat_path, const cv::Mat &mat);
 
-bool ReadCamera(const path &cam_path, Camera &cam);
+bool ReadCamera(const std::filesystem::path &cam_path, Camera &cam);
 
-bool ShowDepthMap(const path &depth_path, const cv::Mat& depth, float depth_min, float depth_max);
+bool ShowDepthMap(const std::filesystem::path &depth_path, const cv::Mat& depth, float depth_min, float depth_max);
 
-bool ShowNormalMap(const path &normal_path, const cv::Mat &normal);
+bool ShowNormalMap(const std::filesystem::path &normal_path, const cv::Mat &normal);
 
-bool ShowWeakImage(const path &weak_path, const cv::Mat &weak);
+bool ShowWeakImage(const std::filesystem::path &weak_path, const cv::Mat &weak);
 
-bool ExportPointCloud(const path& point_cloud_path, std::vector<PointList>& pointcloud);
+bool ExportPointCloud(const std::filesystem::path& point_cloud_path, std::vector<PointList>& pointcloud);
 
 std::string ToFormatIndex(int index);
 
 template <typename TYPE>
 void RescaleMatToTargetSize(const cv::Mat &src, cv::Mat &dst, const cv::Size2i &target_size);
 
-void RunFusion(const path &dense_folder, const std::vector<Problem> &problems);
+void RunFusion(const std::filesystem::path &dense_folder, const std::vector<Problem> &problems);
 
 struct cudaTextureObjects {
 	cudaTextureObject_t images[MAX_IMAGES];

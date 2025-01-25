@@ -7,13 +7,6 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
-// Includes CUDA
-#include <cuda_runtime.h>
-#include <cuda.h>
-#include <cuda_runtime_api.h>
-#include <cuda_texture_types.h>
-#include <curand_kernel.h>
-#include <vector_types.h>
 // Includes STD libs
 #include <vector>
 #include <string>
@@ -29,9 +22,10 @@
 #include <cstdarg>
 #include <random>
 #include <unordered_map>
-// Includes Boost filesystem
-#include <boost/filesystem.hpp>
-#include <boost/filesystem/fstream.hpp>
+
+#include <filesystem>
+
+#include <cuda_runtime.h>
 
 // Define some const var
 #define MAX_IMAGES 32
@@ -41,8 +35,6 @@
 #define DEBUG_POINT_Y 259
 //#define DEBUG_COST_LINE
 //#define DEBUG_NEIGHBOUR
-
-using namespace boost::filesystem;
 
 struct Camera {
 	float K[9];
@@ -97,8 +89,8 @@ struct Problem {
 	int index;
 	int ref_image_id;
 	std::vector<int> src_image_ids;
-	path dense_folder;
-	path result_folder;
+	std::filesystem::path dense_folder;
+	std::filesystem::path result_folder;
 	int scale_size = 1;
 	PatchMatchParams params;
 	bool show_medium_result = false;
