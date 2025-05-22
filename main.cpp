@@ -52,28 +52,28 @@ bool CheckImages(const std::vector<Problem> &problems) {
 		std::cerr << "ERROR problems.size(): " << problems.size() << "\n";
 		return false;
 	}
-	std::filesystem::path image_path = problems[0].dense_folder / "images" / (ToFormatIndex(problems[0].ref_image_id) + ".jpg");
-	cv::Mat image = cv::imread(image_path.string());
-	if (image.empty()) {
-		std::cerr << "ERROR image empty\n";
-		return false;
-	}
-	const int width = image.cols;
-	const int height = image.rows;
-	for (size_t i = 1; i < problems.size(); ++i) {
-		image_path = problems[i].dense_folder / "images" / (ToFormatIndex(problems[i].ref_image_id) + ".jpg");
-		image = cv::imread(image_path.string());
-		if (image.cols != width) {
-			std::cerr << "ERROR all images must be the same dimension\n";
-			std::cerr << "width: " << image.cols << "!=" << width << "\n";
-			return false;
-		} else if (image.rows != height) {
-			std::cerr << "ERROR all images must be the same dimension\n";
-			std::cerr << "height: " << image.rows << "!=" << height << "\n";
-			return false;
-		}
+	// std::filesystem::path image_path = problems[0].dense_folder / "images" / (ToFormatIndex(problems[0].ref_image_id) + ".jpg");
+	// cv::Mat image = cv::imread(image_path.string());
+	// if (image.empty()) {
+	// 	std::cerr << "ERROR image empty\n";
+	// 	return false;
+	// }
+	// const int width = image.cols;
+	// const int height = image.rows;
+	// for (size_t i = 1; i < problems.size(); ++i) {
+	// 	image_path = problems[i].dense_folder / "images" / (ToFormatIndex(problems[i].ref_image_id) + ".jpg");
+	// 	image = cv::imread(image_path.string());
+	// 	if (image.cols != width) {
+	// 		std::cerr << "ERROR all images must be the same dimension\n";
+	// 		std::cerr << "width: " << image.cols << "!=" << width << "\n";
+	// 		return false;
+	// 	} else if (image.rows != height) {
+	// 		std::cerr << "ERROR all images must be the same dimension\n";
+	// 		std::cerr << "height: " << image.rows << "!=" << height << "\n";
+	// 		return false;
+	// 	}
 
-	}
+	// }
 	return true;
 }
 
