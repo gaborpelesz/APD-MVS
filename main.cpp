@@ -1,10 +1,5 @@
-#include "main.h"
 #include "APD.h"
-
-
-void GenerateSampleList(const std::filesystem::path &dense_folder, std::vector<Problem> &problems)
-{
-	std::filesystem::path cluster_list_path = dense_folder / std::filesystem::path("pair.txt");
+#include <fstream>
 	problems.clear();
 	std::ifstream file(cluster_list_path);
 	std::stringstream iss;

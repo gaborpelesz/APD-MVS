@@ -29,7 +29,6 @@ endif()
 
 add_executable(
     APD
-    main.h
     APD.h
     APD.cpp
     APD.cu

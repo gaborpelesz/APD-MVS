@@ -1,9 +1,85 @@
-#ifndef _APD_H_
-#define _APD_H_
-#include "main.h"
+#pragma once
 
 #include <cuda_runtime.h>
 #include <curand_kernel.h>
+#include <filesystem>
+#include <string>
+#include <vector>
+
+#include <opencv2/opencv.hpp>
+
+
+// Define some const var
+#define MAX_IMAGES 32
+#define NEIGHBOUR_NUM 9
+#define MAX_SEARCH_RADIUS 4096
+#define DEBUG_POINT_X 753
+#define DEBUG_POINT_Y 259
+//#define DEBUG_COST_LINE
+//#define DEBUG_NEIGHBOUR
+
+
+struct Camera {
+	float K[9];
+	float R[9];
+	float t[3];
+	float c[3];
+	int height;
+	int width;
+	float depth_min;
+	float depth_max;
+};
+
+struct PointList {
+	float3 coord;
+	float3 color;
+};
+
+enum RunState {
+	FIRST_INIT,
+	REFINE_INIT,
+	REFINE_ITER,
+};
+
+enum PixelState {
+	WEAK,
+	STRONG,
+	UNKNOWN
+};
+
+struct PatchMatchParams {
+	int max_iterations = 3;
+	int num_images = 5;
+	float sigma_spatial = 5.0f;
+	float sigma_color = 3.0f;
+	int top_k = 4;
+	float depth_min = 0.0f;
+	float depth_max = 1.0f;
+	bool geom_consistency = false;
+	int strong_radius = 5;
+	int strong_increment = 2;
+	int weak_radius = 5;
+	int weak_increment = 5;
+	bool use_APD = true;
+	int weak_peak_radius = 2;
+	int rotate_time = 4;
+	float ransac_threshold = 0.005;
+	float geom_factor = 0.2f;
+	RunState state;
+};
+
+struct Problem {
+	int index;
+	int ref_image_id;
+	std::vector<int> src_image_ids;
+	std::filesystem::path dense_folder;
+	std::filesystem::path result_folder;
+	int scale_size = 1;
+	PatchMatchParams params;
+	bool show_medium_result = false;
+	int iteration;
+};
+
 
 #define CUDA_SAFE_CALL(error) CudaSafeCall(error, __FILE__, __LINE__)
 #define CUDA_CHECK_ERROR() CudaCheckError(__FILE__, __LINE__)
@@ -144,4 +220,3 @@ private:
 	float *weak_ncc_cost_cuda;
 #endif // DEBUG_COST_LINE
 };
-#endif // !_APD_H_
