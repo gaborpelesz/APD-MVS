@@ -1,6 +1,22 @@
 #include "APD.h"
 #include <fstream>
+
+
+/**
+ * @brief Generate sample list from cluster list
+ * 
+ * @param cluster_list_path: pair.txt file with the following format:
+ * | <n_images>
+ * | <ref_image_id_1>
+ * | <m_source_images> <src_image_id_1> <score_1> ... <src_image_id_m> <score_m>
+ * | ...
+ * | <ref_image_id_n>
+ * | ...
+ */
+void GenerateSampleList(const std::filesystem::path &cluster_list_path, std::vector<Problem> &problems)
+{
 	problems.clear();
+
 	std::ifstream file(cluster_list_path);
 	std::stringstream iss;
 	std::string line;
@@ -20,9 +36,8 @@
 		iss.str(line);
 		iss >> problem.ref_image_id;
 
-		problem.dense_folder = dense_folder;
-		problem.result_folder = dense_folder / "APD" / ToFormatIndex(problem.ref_image_id);
-		create_directory(problem.result_folder);
+		problem.result_folder = cluster_list_path.parent_path() / "APD" / ToFormatIndex(problem.ref_image_id);
+		std::filesystem::create_directories(problem.result_folder);
 
 		int num_src_images;
 		iss.clear();
@@ -42,46 +57,14 @@
 	}
 }
 
-bool CheckImages(const std::vector<Problem> &problems) {
-	if (problems.size() == 0) {
-		std::cerr << "ERROR problems.size(): " << problems.size() << "\n";
-		return false;
-	}
-	// std::filesystem::path image_path = problems[0].dense_folder / "images" / (ToFormatIndex(problems[0].ref_image_id) + ".jpg");
-	// cv::Mat image = cv::imread(image_path.string());
-	// if (image.empty()) {
-	// 	std::cerr << "ERROR image empty\n";
-	// 	return false;
-	// }
-	// const int width = image.cols;
-	// const int height = image.rows;
-	// for (size_t i = 1; i < problems.size(); ++i) {
-	// 	image_path = problems[i].dense_folder / "images" / (ToFormatIndex(problems[i].ref_image_id) + ".jpg");
-	// 	image = cv::imread(image_path.string());
-	// 	if (image.cols != width) {
-	// 		std::cerr << "ERROR all images must be the same dimension\n";
-	// 		std::cerr << "width: " << image.cols << "!=" << width << "\n";
-	// 		return false;
-	// 	} else if (image.rows != height) {
-	// 		std::cerr << "ERROR all images must be the same dimension\n";
-	// 		std::cerr << "height: " << image.rows << "!=" << height << "\n";
-	// 		return false;
-	// 	}
-
-	// }
-	return true;
-}
-
 int ComputeRoundNum(const std::vector<Problem> &problems) {
-	if (problems.size() == 0) {
-		return 0;
-	}
-	std::filesystem::path image_path = problems[0].dense_folder / "images" / (ToFormatIndex(problems[0].ref_image_id) + ".jpg");
+	assert(problems.size() > 0);
+	std::filesystem::path image_path = problems[0].result_folder / "images" / (ToFormatIndex(problems[0].ref_image_id) + ".jpg");
 	cv::Mat image = cv::imread(image_path.string());
 	if (image.empty()) {
 		return 0;
 	}
-	int max_size = MAX(image.cols, image.rows);
+	int max_size = std::max(image.cols, image.rows);
 	int round_num = 1;
 	while (max_size > 1000) {
 		max_size /= 2;
@@ -142,22 +125,33 @@ void ProcessProblem(const Problem &problem) {
 
 int main(int argc, char **argv) {
 	if (argc < 2) {
-		std::cerr << "USAGE: APD dense_folder\n";
+		std::cerr << "USAGE: APD dense_folder [gpu_device_index]\n";
 		return EXIT_FAILURE;
 	}
 	std::filesystem::path dense_folder(argv[1]);
+	if (!std::filesystem::exists(dense_folder)) {
+		std::cerr << "ERROR dense_folder: " << dense_folder << " not found\n";
+		return EXIT_FAILURE;
+	}
 	std::filesystem::path output_folder = dense_folder / "APD";
-	create_directory(output_folder);
+	std::filesystem::create_directory(output_folder);
 	// set cuda device for multi-gpu machine
 	int gpu_index = 0;
 	if (argc == 3) {
 		gpu_index = std::atoi(argv[2]);
 	}
 	cudaSetDevice(gpu_index);
+
 	// generate problems
 	std::vector<Problem> problems;
-	GenerateSampleList(dense_folder, problems);
-	if (!CheckImages(problems)) {
+	std::filesystem::path cluster_list_path = dense_folder / std::filesystem::path("pair.txt");
+	if (!std::filesystem::exists(cluster_list_path)) {
+		std::cerr << "ERROR cluster_list_path: " << cluster_list_path << " not found\n";
+		return EXIT_FAILURE;
+	}
+	GenerateSampleList(cluster_list_path, problems);
+	if (problems.size() == 0) {
+		std::cerr << "ERROR problems.size(): " << problems.size() << "\n";
 		std::cerr << "Images may error, check it!\n";
 		return EXIT_FAILURE;
 	}
