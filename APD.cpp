@@ -224,32 +224,28 @@ bool ExportPointCloud(const std::filesystem::path& point_cloud_path, std::vector
 	out << "property float x\n";
 	out << "property float y\n";
 	out << "property float z\n";
-	out << "property uchar blue\n";
-	out << "property uchar green\n";
 	out << "property uchar red\n";
+	out << "property uchar green\n";
+	out << "property uchar blue\n";
 	out << "end_header\n";
 
-	for (size_t idx = 0; idx < pointcloud.size(); idx++)
-	{
-		float px = pointcloud[idx].coord.x;
-		float py = pointcloud[idx].coord.y;
-		float pz = pointcloud[idx].coord.z;
+	for (auto &point : pointcloud) {
+		float px = point.coord.x;
+		float py = point.coord.y;
+		float pz = point.coord.z;
 
+		uchar b = static_cast<uchar>(point.color.x);
+		uchar g = static_cast<uchar>(point.color.y);
+		uchar r = static_cast<uchar>(point.color.z);
 
-		cv::Vec3b pixel;
-		pixel[0] = static_cast<uchar>(pointcloud[idx].color.x);
-		pixel[1] = static_cast<uchar>(pointcloud[idx].color.y);
-		pixel[2] = static_cast<uchar>(pointcloud[idx].color.z);
+		out.write(reinterpret_cast<char *>(&px), sizeof(float));
+		out.write(reinterpret_cast<char *>(&py), sizeof(float));
+		out.write(reinterpret_cast<char *>(&pz), sizeof(float));
 
-		out.write((char *)&px, sizeof(float));
-		out.write((char *)&py, sizeof(float));
-		out.write((char *)&pz, sizeof(float));
-
-		out.write((char *)&pixel[0], sizeof(uchar));
-		out.write((char *)&pixel[1], sizeof(uchar));
-		out.write((char *)&pixel[2], sizeof(uchar));
+		out.write(reinterpret_cast<char *>(&b), sizeof(uchar));
+		out.write(reinterpret_cast<char *>(&g), sizeof(uchar));
+		out.write(reinterpret_cast<char *>(&r), sizeof(uchar));
 	}
-	out.close();
 	return true;
 }
 
