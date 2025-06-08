@@ -224,9 +224,9 @@ bool ExportPointCloud(const std::filesystem::path& point_cloud_path, std::vector
 	out << "property float x\n";
 	out << "property float y\n";
 	out << "property float z\n";
-	out << "property uchar diffuse_blue\n";
-	out << "property uchar diffuse_green\n";
-	out << "property uchar diffuse_red\n";
+	out << "property uchar blue\n";
+	out << "property uchar green\n";
+	out << "property uchar red\n";
 	out << "end_header\n";
 
 	for (size_t idx = 0; idx < pointcloud.size(); idx++)
