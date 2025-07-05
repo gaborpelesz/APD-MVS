@@ -14,7 +14,7 @@ else()
     message(FATAL_ERROR "-- CUDA NOT FOUND: Fatal error")
 endif()
 
-find_package(OpenCV REQUIRED)
+find_package(OpenCV REQUIRED core imgproc imgcodecs)
 find_package(Eigen3 REQUIRED)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
